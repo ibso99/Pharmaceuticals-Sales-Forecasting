@@ -9,6 +9,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.callbacks import EarlyStopping
+import pickle
 
 class LSTMSalesModel:
     def __init__(self, filepath, lag=5):
@@ -76,7 +77,7 @@ class LSTMSalesModel:
         )
         return history
 
-    def run_pipeline(self, save_path='lstm_sales_model.h5'):
+    def run_pipeline(self, save_path='lstm_sales_model.pkl'):
         # Load data
         self.load_data()
 
@@ -110,7 +111,7 @@ class LSTMSalesModel:
         plt.legend()
         plt.show()
 
-        # Save the model
-        self.model.save(save_path)
-        print(f"Model saved at '{save_path}'")
-
+        # Save the model as a pickle file
+        with open(save_path, 'wb') as f:
+            pickle.dump({'model': self.model, 'scaler': self.scaler}, f)
+        print(f"Model and scaler saved at '{save_path}'")

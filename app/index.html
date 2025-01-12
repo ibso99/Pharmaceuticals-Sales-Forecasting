@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosman Pharmaceuticals Sales Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            background-color: #f9f9f9;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        #result {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+        }
+
+        .info {
+            color: #4CAF50;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rosman Pharmaceuticals Sales Prediction</h1>
+        <form id="prediction-form">
+            <label for="input-data">Enter data for prediction (comma-separated):</label>
+            <input type="text" id="input-data" name="input_data" placeholder="e.g., 100,120,110,130,125" required>
+            
+            <label for="days-to-predict">Days to predict:</label>
+            <input type="number" id="days-to-predict" name="days_to_predict" placeholder="e.g., 6" required>
+            
+            <button type="submit">Submit</button>
+        </form>
+
+        <h2>Prediction Result:</h2>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        document.getElementById("prediction-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const inputData = document.getElementById("input-data").value.split(",").map(Number);
+            const daysToPredict = parseInt(document.getElementById("days-to-predict").value);
+
+            if (inputData.length !== 5) {
+                document.getElementById("result").textContent = "Please enter exactly 5 recent sales values.";
+                document.getElementById("result").className = "error";
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/predict/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        recent_sales: inputData,
+                        days_to_predict: daysToPredict
+                    })
+                });
+
+                const result = await response.json();
+                if (result.predictions) {
+                    document.getElementById("result").textContent = `Predicted Sales: ${result.predictions.join(", ")}`;
+                    document.getElementById("result").className = "info";
+                } else {
+                    document.getElementById("result").textContent = "Error: " + result.detail;
+                    document.getElementById("result").className = "error";
+                }
+            } catch (error) {
+                document.getElementById("result").textContent = "Failed to fetch prediction. Please try again.";
+                document.getElementById("result").className = "error";
+            }
+        });
+    </script>
+</body>
+</html>
